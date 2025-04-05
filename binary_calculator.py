@@ -1,4 +1,3 @@
-
 from enum import Enum
 
 class INPUT_STATE(Enum):
@@ -78,10 +77,40 @@ def perform_Calculation(string_x: str, string_y: str, operation: str):
 
 
 def addition(binary_x: list[int], binary_y: list[int]):
-    #find the bigger length between the two binary lists
+    #reverse the binary lists so that we are dealing with the least significant digit in both lists
+    binary_x.reverse()
+    binary_y.reverse()
+    #define the max_len between both lists
     max_len = max(len(binary_x),len(binary_y))
-    #declare a var to hold the bits to be carried over
-    carried = 0
+    #declare a binary list to hold the sum of the x and y lists
+    binary_sum = list()
+    #declare a var to hold the bits to be carryover over
+    carryover = 0
+    #interate over the max_len of the two binary lists in reverse so we start from the
+    #least significant digit to the highest
+    for i in range(0,max_len):
+        #initialise x and y as 0 as a default incase either binary list is shorter in length
+        x = 0
+        y = 0
+        #check the list lengths to see if i is within bounds and set x or y to the item at 
+        #the current index
+        if i < len(binary_x):
+            x = binary_x[i]
+        if i < len(binary_y):
+            y = binary_y[i]
+        #append the sum bit to the binary sum list
+        binary_sum.append(ADD_BIT(x,y,carryover))
+        #calculate the carryover bit
+        carryover = CARRY_BIT(x,y,carryover)
+    
+    #check if the carryover bit for the final addition is non 0
+    if carryover == 1:
+        binary_sum.append(carryover)
+
+    #reverse the binary sum list as we added the values in backwards from right to left
+    binary_sum.reverse()
+    #display the equation
+    display_equation(binary_x,binary_y,binary_sum,"+")
     
 
 def subtraction(value_x: list[int], value_y: list[int]):
@@ -96,11 +125,56 @@ def NOR(x: int,y: int) -> int:
     else:
         return 0
     
-def ADD_BIT(x: int,y: int,c: int) -> int:
-    pass
+def NOT(x: int) -> int:
+    '''
+    Not Function that works by pushing x into NOR to get the inverse of x.
+    
+    E.g. --> x = 1;  xNORx === !x&&!x = !x = 0;
+    '''
+    return NOR(x,x)
 
-def CARRY_BIT():
-    pass
+def AND(x: int, y: int) -> int:
+    '''
+    And function that works by pushing x into a NOT and Y into an NOT then pushing those values
+    into a NOR the AND. We are effectively inverting the values of the NOR from !x&&!y into x&&y 
+    converting the NOR into an AND.
+
+    E.g. --> x = 1, y = 1; !xNOR!y === !!x&&!!y === x&&y = 1;
+    '''
+    return NOR(NOT(x),NOT(y))
+
+def OR(x: int, y:int) -> int:
+    '''
+    Or function that works by getting the NOR of the NORs of x and y. This effectively inverts the
+    NOR function into an OR.
+
+    E.g: 
+        • OR == True:
+            x = 1, y = 0; (xNORy)NOR(xNORy) === !(!x&&!y)&&!(!x&&y!);
+            (!x&&!y) = 0, !(!x&&!y) = 1, !(!x&&!y)&&!(!x&&!y) = 1; 
+        • OR == False:
+            x = 0, y = 0; (xNORy)NOR(xNORy) === !(!x&&!y)&&!(!x&&y!);
+            (!x&&!y) = 1, !(!x&&!y) = 0, !(!x&&!y)&&!(!x&&!y) = 0;
+    '''
+    return NOR(NOR(x,y),NOR(x,y))
+
+def XOR(x: int,y: int) -> int:
+    '''
+    XOR function that works by following the compound expression of !x&&y||x&&!y.
+    '''
+    return OR(AND(NOT(x),y),AND(x,NOT(y)))
+    
+    
+def ADD_BIT(x: int,y: int,c: int) -> int:
+    '''
+
+    '''
+    return XOR(XOR(x,y),c)
+
+def CARRY_BIT(x: int, y: int, c: int):
+    '''
+    '''
+    return OR(AND(x,y),AND(c,XOR(x,y)))
 
 def SUB_BIT():
     pass
@@ -111,9 +185,9 @@ def BORROW_BIT():
 def LESS_THAN():
     pass
 
-def convert_string_to_list(string: str) -> list:
-    return list(int, string)
 
+def convert_string_to_list(string: str) -> list:
+    return [int(char) for char in string]
         
 def validate_input(x: str) -> bool:
     #reference the current_state as a global var
@@ -136,7 +210,28 @@ def validate_input(x: str) -> bool:
         #something's gone horribly wrong
         print("Invalid operation.\n\n")
         return False
-    
+
+def display_equation(binary_x: list[int],binary_y: list[int],binary_sum: list[int],operationSymbol: str):
+    #get the max length of the binary lists + two for an extra _ and operator + or -
+    max_len = max(len(binary_x),len(binary_y),len(binary_sum)) + 2
+    #initialise the display strings using list comprehension to convert the ints of the list into strings
+    #then join the converted strings into an empty string for each list
+    x_str = [str(bit) for bit in binary_x]
+    x_str = "".join(x_str)
+    y_str = [str(bit) for bit in binary_y]
+    y_str = "".join(y_str)
+    sum_str = [str(bit) for bit in binary_sum]
+    sum_str = "".join(sum_str)
+    #calculate the padding for the binary lists
+    x_padding = max_len - len(binary_x)
+    y_padding = max_len - len(binary_y) - 2
+    sum_padding = max_len - len(binary_sum)
+    #print off each line at a time
+    print(" "*x_padding,x_str)
+    print(f"{operationSymbol}",(" "*y_padding),y_str) 
+    print("-"*(max_len+1),)
+    print(" "*sum_padding,sum_str+"\n")
+
 
 def print_author_details():
     print("Author: Travis Strawbridge\nStudent ID: 110340713\nEmail ID: STRTK001\nThis is my own work as defined by the University's Academic Integrity Policy.\n\n")
