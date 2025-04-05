@@ -65,9 +65,54 @@ def perform_Calculation(string_x: str, string_y: str, operation: str):
     #set the current state to CALCULATION
     current_state = INPUT_STATE.CALCULATION
     #covert the string values to lists
+    binary_x = convert_string_to_list(string_x)
+    binary_y = convert_string_to_list(string_y)
+    #check the type of operation and execute it using the x and y binary values
+    if operation == "+":
+        addition(binary_x,binary_y)
+    elif operation == "-":
+        subtraction(binary_x,binary_y)
+    else:
+        #something's gone horribly wrong
+        pass
 
-def convert_string_to_lists(string: str) -> list:
+
+def addition(binary_x: list[int], binary_y: list[int]):
+    #find the bigger length between the two binary lists
+    max_len = max(len(binary_x),len(binary_y))
+    #declare a var to hold the bits to be carried over
+    carried = 0
+    
+
+def subtraction(value_x: list[int], value_y: list[int]):
     pass
+    
+def NOR(x: int,y: int) -> int:
+    #if x and y are false, or in this case 0:
+    if x == 0 and y == 0:
+        #return true, or in this case 1
+        return 1
+    #NOR is only true when both x and y are false so return false; 0
+    else:
+        return 0
+    
+def ADD_BIT(x: int,y: int,c: int) -> int:
+    pass
+
+def CARRY_BIT():
+    pass
+
+def SUB_BIT():
+    pass
+
+def BORROW_BIT():
+    pass
+
+def LESS_THAN():
+    pass
+
+def convert_string_to_list(string: str) -> list:
+    return list(int, string)
 
         
 def validate_input(x: str) -> bool:
