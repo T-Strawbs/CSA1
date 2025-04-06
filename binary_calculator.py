@@ -61,7 +61,9 @@ def program():
         
 
 def perform_Calculation(string_x: str, string_y: str, operation: str):
-    print("DEBUG: Performing CALCULATION\n")
+    '''
+    Function for handling the calculation request depending on the given operation
+    '''
     #reference the current_state as a global var
     global current_state
     #set the current state to CALCULATION
@@ -72,14 +74,14 @@ def perform_Calculation(string_x: str, string_y: str, operation: str):
     #check the type of operation and execute it using the x and y binary values
     if operation == "+":
         addition(binary_x,binary_y)
-    elif operation == "-":
-        subtraction(binary_x,binary_y)
     else:
-        #something's gone horribly wrong
-        pass
+        subtraction(binary_x,binary_y)
 
 
 def addition(binary_x: list[int], binary_y: list[int]):
+    '''
+    Function that performs the addition operation of binary_x + binary_y
+    '''
     #get the max_len between both lists
     max_len = max(len(binary_x),len(binary_y))
     #create copies of the binary lists so we dont modify the originals
@@ -120,19 +122,19 @@ def addition(binary_x: list[int], binary_y: list[int]):
     
 
 def subtraction(binary_x: list[int], binary_y: list[int]):
+    '''
+    Function that performs the subtraction operation of binary_x - binary_y
+    '''
     #get the max_len between both lists
     max_len = max(len(binary_x),len(binary_y))
-    #check if binary_x is less than binary_y
-    is_negative = less_than(binary_x,binary_y)
+    #check if binary_x is less than binary_y which would result in a negative result
+    is_negative = is_less_than(binary_x,binary_y)
     #create copies of the binary lists so we dont modify the originals
     list_x = list(binary_x)
     list_y = list(binary_y)
     #if the number will be negative, flip the lists so that x == y y == x
     if is_negative:
-        print("DEBUG: its negative")
         list_x,list_y = list_y,list_x
-    else:
-        print("DEBUG: its positive")
     #reverse the lists 
     list_x.reverse()
     list_y.reverse()
@@ -172,7 +174,10 @@ def subtraction(binary_x: list[int], binary_y: list[int]):
     #display the equasion
     display_equation(binary_x,binary_y,binary_result,"-",is_negative)
 
-def less_than(binary_x: list[int],binary_y: list[int]) -> bool:
+def is_less_than(binary_x: list[int],binary_y: list[int]) -> bool:
+    '''
+    function for performing multi bit comparason to see if binary_x is < binary_y and returns a bool
+    '''
     #get the max_len between both lists
     max_len = max(len(binary_x),len(binary_y))
     #initalise copies of the lists so we dont work with the references
@@ -194,9 +199,10 @@ def less_than(binary_x: list[int],binary_y: list[int]) -> bool:
     #return true if x < 1 or false if not
     return l == 1
 
-
-    
 def NOR(x: int,y: int) -> int:
+    '''
+    NOR function to get the value of !x&&!y, the invers of an OR function.
+    '''
     #if x and y are false, or in this case 0:
     if x == 0 and y == 0:
         #return true, or in this case 1
@@ -250,13 +256,15 @@ def XOR(x: int,y: int) -> int:
     
 def ADD_BIT(x: int,y: int,c: int) -> int:
     '''
-
+    Single bit addition function that sums the x and y values considering the carry over from the previous
+    LSD bit; c
     '''
     return XOR(XOR(x,y),c)
 
 def CARRY_BIT(x: int, y: int, c: int):
     '''
-
+    Logic gate function for carrying over the carry value, c, from the sum of x and y to be used in the addition of
+    the next more significant digits.
     '''
     return OR(
         AND(x,y),
@@ -268,13 +276,15 @@ def CARRY_BIT(x: int, y: int, c: int):
 
 def SUB_BIT(x: int, y: int,b: int) -> int:
     '''
-
+    Single bit subtraction function that calculates the difference of x - y,
+    while considering the borrow value, b ,from the previous LSD.
     '''
     return XOR(XOR(x,y),b)
 
 def BORROW_BIT(x: int, y: int,b: int) -> int:
     '''
-    
+    Logic gate function for determining if a bit needs to be borrowed from the next highest digit
+    when calculating the subtraction of x - y while considering b.
     '''
     return OR(
             AND(
@@ -289,7 +299,8 @@ def BORROW_BIT(x: int, y: int,b: int) -> int:
 
 def LESS_THAN(x: int, y: int, l: int) -> int:
     '''
-    
+    Single bit comparason function for comparing if x < y, considering the result of the lower digit from
+    a previous check; l.
     '''
     return OR(
         AND(
@@ -302,17 +313,23 @@ def LESS_THAN(x: int, y: int, l: int) -> int:
         )
     )
 
-
 def convert_string_to_list(string: str) -> list:
+    '''
+    Helper method for converting a string of numbers into a list of ints to represent binary numbers
+    '''
     return [int(char) for char in string]
         
 def validate_input(x: str) -> bool:
+    '''
+    Function for validating the user's input using the expected output given the current state of the
+    program.
+    '''
     #reference the current_state as a global var
     global current_state
     #check the current_state
     if current_state == INPUT_STATE.OPERATION:
         if x == None or x.strip().lower() not in operations:
-            print("Invalid operation.\n\n")
+            print("Invalid operation.\n")
             return False
         return True
     elif current_state == INPUT_STATE.VALUES:
@@ -320,12 +337,12 @@ def validate_input(x: str) -> bool:
         is_valid_x = all(char in {"0","1"} for char in x)
         #check if both x and y are valid
         if not is_valid_x:
-            print(f"Not a binary number! {is_valid_x}\n\n")
+            print(f"Not a binary number!\n")
             return False
         return True
     else:
         #something's gone horribly wrong
-        print("Invalid operation.\n\n")
+        print("Invalid operation.\n")
         return False
 
 def display_equation(
@@ -334,6 +351,9 @@ def display_equation(
         binary_sum: list[int],
         operationSymbol: str,
         is_negative: bool = False):
+    '''
+    Function for displaying the calculation equation and the result.
+    '''
     #get the max length of the binary lists + two for an extra _ and operator + or -
     max_len = max(len(binary_x),len(binary_y),len(binary_sum)) + 2
     #initialise the display strings using list comprehension to convert the ints of the list into strings
@@ -358,6 +378,9 @@ def display_equation(
         print(" "*sum_padding,sum_str+"\n")
 
 def display_nor_truth_table():
+    '''
+    Function for displaying the truth table for the NOR functions.
+    '''
     print("NOR\nx y Z\n-----")
     x = 0
     #construct the truth table
@@ -371,6 +394,9 @@ def display_nor_truth_table():
     print()
     
 def display_addition_truth_table():
+    '''
+    Function for displaying the truth tables for the ADD_BIT and CARRY_BIT functions.
+    '''
     print("ADDITION\nc x y Z C\n---------")
     in_c = 0
     #construct the truth table
@@ -387,6 +413,9 @@ def display_addition_truth_table():
     print()
 
 def display_subtraction_truth_table():
+    '''
+    Function for displaying the truth tables for the SUB_BIT and BORROW functions.
+    '''
     print("SUBTRACTION\nb x y Z B\n---------")
     in_b = 0
     while in_b < 2:
@@ -401,6 +430,9 @@ def display_subtraction_truth_table():
     print()
 
 def display_less_than_truth_table():
+    '''
+    Function for displaying the truth tables for the LESS_THAN function.
+    '''
     print("LESS_THAN\nl x y L\n-------")
     in_l = 0
     #construct the truth table
@@ -415,6 +447,7 @@ def display_less_than_truth_table():
     print()
 
 def print_author_details():
+    '''Function for displaying the details of the author.'''
     print("Author: Travis Strawbridge\nStudent ID: 110340713\nEmail ID: STRTK001\n"+
     "This is my own work as defined by the University's Academic Integrity Policy.\n")
 
