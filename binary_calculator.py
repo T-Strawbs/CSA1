@@ -295,7 +295,7 @@ def BORROW_BIT(x: int, y: int,b: int) -> int:
                 NOT(x),
                 y
             )
-        )
+    )
 
 def LESS_THAN(x: int, y: int, l: int) -> int:
     '''
@@ -317,7 +317,14 @@ def convert_string_to_list(string: str) -> list:
     '''
     Helper method for converting a string of numbers into a list of ints to represent binary numbers
     '''
-    return [int(char) for char in string]
+    binary_list = [int(char) for char in string]
+    #remove the trailing 0's if there are any
+    for i in range(0,len(binary_list)):
+        #if the item of index i is 1 then slice the list from here
+        if binary_list[i] == 1:
+            binary_list = binary_list[i:]
+            break
+    return binary_list
         
 def validate_input(x: str) -> bool:
     '''
@@ -368,6 +375,8 @@ def display_equation(
     x_padding = max_len - len(binary_x)
     y_padding = max_len - len(binary_y) - 2
     sum_padding = max_len - len(binary_sum)
+    #start with a gap
+    print()
     #print off each line at a time
     print(" "*x_padding,x_str)
     print(f"{operationSymbol}",(" "*y_padding),y_str) 
@@ -382,15 +391,13 @@ def display_nor_truth_table():
     Function for displaying the truth table for the NOR functions.
     '''
     print("NOR\nx y Z\n-----")
-    x = 0
     #construct the truth table
-    while x < 2:
+    for x in range(0,2):
         for y in range(0,2):
             #get the xNORy
             z = NOR(x,y)
             #display the row
             print(f"{x} {y} {z}")
-        x += 1
     print()
     
 def display_addition_truth_table():
@@ -417,8 +424,7 @@ def display_subtraction_truth_table():
     Function for displaying the truth tables for the SUB_BIT and BORROW functions.
     '''
     print("SUBTRACTION\nb x y Z B\n---------")
-    in_b = 0
-    while in_b < 2:
+    for in_b in range (0,2):
         for x in range(0,2):
             for y in range(0,2):
                 #get the subtracted bit
@@ -426,7 +432,6 @@ def display_subtraction_truth_table():
                 #get the borrowed bit
                 out_b = BORROW_BIT(x,y,in_b)
                 print(f"{in_b} {x} {y} {z} {out_b}")
-        in_b += 1
     print()
 
 def display_less_than_truth_table():
@@ -434,16 +439,14 @@ def display_less_than_truth_table():
     Function for displaying the truth tables for the LESS_THAN function.
     '''
     print("LESS_THAN\nl x y L\n-------")
-    in_l = 0
     #construct the truth table
-    while in_l < 2:
+    for  in_l in range (0,2):
         for x in range(0,2):
             for y in range(0,2):
                 #get the result of x < y
                 out_l = LESS_THAN(x,y,in_l)
                 #display the row
                 print(f"{in_l} {x} {y} {out_l}")
-        in_l += 1 
     print()
 
 def print_author_details():
