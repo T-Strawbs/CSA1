@@ -17,8 +17,11 @@ def run():
         Entry point of our program.
     '''
     print_author_details()
+    display_nor_truth_table()
+    display_addition_truth_table()
+    display_subtraction_truth_table()
+    display_less_than_truth_table()
     program()
-    pass
 
 def program():
     '''
@@ -77,11 +80,14 @@ def perform_Calculation(string_x: str, string_y: str, operation: str):
 
 
 def addition(binary_x: list[int], binary_y: list[int]):
-    #reverse the binary lists so that we are dealing with the least significant digit in both lists
-    binary_x.reverse()
-    binary_y.reverse()
-    #define the max_len between both lists
+    #get the max_len between both lists
     max_len = max(len(binary_x),len(binary_y))
+    #create copies of the binary lists so we dont modify the originals
+    list_x = list(binary_x)
+    list_y = list(binary_y)
+    #reverse the binary lists so that we are dealing with the least significant digit in both lists
+    list_x.reverse()
+    list_y.reverse()
     #declare a binary list to hold the sum of the x and y lists
     binary_sum = list()
     #declare a var to hold the bits to be carryover over
@@ -94,16 +100,16 @@ def addition(binary_x: list[int], binary_y: list[int]):
         y = 0
         #check the list lengths to see if i is within bounds and set x or y to the item at 
         #the current index
-        if i < len(binary_x):
-            x = binary_x[i]
-        if i < len(binary_y):
-            y = binary_y[i]
+        if i < len(list_x):
+            x = list_x[i]
+        if i < len(list_y):
+            y = list_y[i]
         #append the sum bit to the binary sum list
         binary_sum.append(ADD_BIT(x,y,carryover))
         #calculate the carryover bit
         carryover = CARRY_BIT(x,y,carryover)
     
-    #check if the carryover bit for the final addition is non 0
+    #check if the carryover bit for the final addition is 1
     if carryover == 1:
         binary_sum.append(carryover)
 
@@ -113,8 +119,82 @@ def addition(binary_x: list[int], binary_y: list[int]):
     display_equation(binary_x,binary_y,binary_sum,"+")
     
 
-def subtraction(value_x: list[int], value_y: list[int]):
-    pass
+def subtraction(binary_x: list[int], binary_y: list[int]):
+    #get the max_len between both lists
+    max_len = max(len(binary_x),len(binary_y))
+    #check if binary_x is less than binary_y
+    is_negative = less_than(binary_x,binary_y)
+    #create copies of the binary lists so we dont modify the originals
+    list_x = list(binary_x)
+    list_y = list(binary_y)
+    #if the number will be negative, flip the lists so that x == y y == x
+    if is_negative:
+        print("DEBUG: its negative")
+        list_x,list_y = list_y,list_x
+    else:
+        print("DEBUG: its positive")
+    #reverse the lists 
+    list_x.reverse()
+    list_y.reverse()
+    #declare a binary list to hold the result of the subtraction of x - y
+    binary_result = list()
+    #declare a var to hold the bits to be borrowed
+    borrowed = 0
+    #iterate over the binary lists from LSD to MSD (right to left)
+    for i in range(0,max_len):
+        #initialise x and y as 0 as a default incase either binary list is shorter in length
+        x = 0
+        y = 0
+        #check the list lengths to see if i is within bounds and set x or y to the item at 
+        #the current index
+        if i < len(list_x):
+            x = list_x[i]
+        if i < len(list_y):
+            y = list_y[i]
+        #append the resulting bit to the binary result list
+        binary_result.append(SUB_BIT(x,y,borrowed))
+        #calculate the carryover bit
+        borrowed = BORROW_BIT(x,y,borrowed)
+    
+    #check if the borrowed bit for the final subtraction is 1
+    if borrowed == 1:
+        binary_result.append(borrowed)
+    
+    #reverse the binary result list
+    binary_result.reverse()
+    #remove the trailing 0's if there are any
+    for i in range(0,len(binary_result)):
+        #if the item of index i is 1 then slice the list from here
+        if binary_result[i] == 1:
+            binary_result = binary_result[i:]
+            break
+
+    #display the equasion
+    display_equation(binary_x,binary_y,binary_result,"-",is_negative)
+
+def less_than(binary_x: list[int],binary_y: list[int]) -> bool:
+    #get the max_len between both lists
+    max_len = max(len(binary_x),len(binary_y))
+    #initalise copies of the lists so we dont work with the references
+    x_list = list([0]*(max_len - len(binary_x)) + binary_x)
+    y_list = list([0]*(max_len - len(binary_y)) + binary_y)
+
+    #reverse both lists to compare from LSD to MSD
+    x_list.reverse()
+    y_list.reverse()
+
+    l = 0
+    #iterate over each item in both lists
+    for i in range(0,max_len):
+        #get the items
+        x = x_list[i]
+        y = y_list[i]
+        #compare x and y to determine if x < y
+        l = LESS_THAN(x,y,l)
+    #return true if x < 1 or false if not
+    return l == 1
+
+
     
 def NOR(x: int,y: int) -> int:
     #if x and y are false, or in this case 0:
@@ -162,7 +242,10 @@ def XOR(x: int,y: int) -> int:
     '''
     XOR function that works by following the compound expression of !x&&y||x&&!y.
     '''
-    return OR(AND(NOT(x),y),AND(x,NOT(y)))
+    return OR(
+        AND(NOT(x),y),
+        AND(x,NOT(y))
+    )
     
     
 def ADD_BIT(x: int,y: int,c: int) -> int:
@@ -173,17 +256,51 @@ def ADD_BIT(x: int,y: int,c: int) -> int:
 
 def CARRY_BIT(x: int, y: int, c: int):
     '''
+
     '''
-    return OR(AND(x,y),AND(c,XOR(x,y)))
+    return OR(
+        AND(x,y),
+        AND(
+            XOR(x,y),
+            c
+        )
+    )
 
-def SUB_BIT():
-    pass
+def SUB_BIT(x: int, y: int,b: int) -> int:
+    '''
 
-def BORROW_BIT():
-    pass
+    '''
+    return XOR(XOR(x,y),b)
 
-def LESS_THAN():
-    pass
+def BORROW_BIT(x: int, y: int,b: int) -> int:
+    '''
+    
+    '''
+    return OR(
+            AND(
+                NOT(XOR(x,y)),
+                b
+            ),
+            AND(
+                NOT(x),
+                y
+            )
+        )
+
+def LESS_THAN(x: int, y: int, l: int) -> int:
+    '''
+    
+    '''
+    return OR(
+        AND(
+            NOT(x),
+            y
+        ),
+        AND(
+            NOT(XOR(x,y)),
+            l
+        )
+    )
 
 
 def convert_string_to_list(string: str) -> list:
@@ -211,7 +328,12 @@ def validate_input(x: str) -> bool:
         print("Invalid operation.\n\n")
         return False
 
-def display_equation(binary_x: list[int],binary_y: list[int],binary_sum: list[int],operationSymbol: str):
+def display_equation(
+        binary_x: list[int],
+        binary_y: list[int],
+        binary_sum: list[int],
+        operationSymbol: str,
+        is_negative: bool = False):
     #get the max length of the binary lists + two for an extra _ and operator + or -
     max_len = max(len(binary_x),len(binary_y),len(binary_sum)) + 2
     #initialise the display strings using list comprehension to convert the ints of the list into strings
@@ -230,11 +352,71 @@ def display_equation(binary_x: list[int],binary_y: list[int],binary_sum: list[in
     print(" "*x_padding,x_str)
     print(f"{operationSymbol}",(" "*y_padding),y_str) 
     print("-"*(max_len+1),)
-    print(" "*sum_padding,sum_str+"\n")
+    if is_negative:
+        print(" "*(sum_padding-1),"-"+sum_str+"\n")
+    else:
+        print(" "*sum_padding,sum_str+"\n")
 
+def display_nor_truth_table():
+    print("NOR\nx y Z\n-----")
+    x = 0
+    #construct the truth table
+    while x < 2:
+        for y in range(0,2):
+            #get the xNORy
+            z = NOR(x,y)
+            #display the row
+            print(f"{x} {y} {z}")
+        x += 1
+    print()
+    
+def display_addition_truth_table():
+    print("ADDITION\nc x y Z C\n---------")
+    in_c = 0
+    #construct the truth table
+    while in_c < 2:
+        for x in range(0,2):
+            for y in range(0,2):
+                #get the sum of the bits
+                z = ADD_BIT(x,y,in_c)
+                #get the carry bit of the sum
+                out_c = CARRY_BIT(x,y,in_c)
+                #display the row
+                print(f"{in_c} {x} {y} {z} {out_c}")
+        in_c += 1
+    print()
+
+def display_subtraction_truth_table():
+    print("SUBTRACTION\nb x y Z B\n---------")
+    in_b = 0
+    while in_b < 2:
+        for x in range(0,2):
+            for y in range(0,2):
+                #get the subtracted bit
+                z = SUB_BIT(x,y,in_b)
+                #get the borrowed bit
+                out_b = BORROW_BIT(x,y,in_b)
+                print(f"{in_b} {x} {y} {z} {out_b}")
+        in_b += 1
+    print()
+
+def display_less_than_truth_table():
+    print("LESS_THAN\nl x y L\n-------")
+    in_l = 0
+    #construct the truth table
+    while in_l < 2:
+        for x in range(0,2):
+            for y in range(0,2):
+                #get the result of x < y
+                out_l = LESS_THAN(x,y,in_l)
+                #display the row
+                print(f"{in_l} {x} {y} {out_l}")
+        in_l += 1 
+    print()
 
 def print_author_details():
-    print("Author: Travis Strawbridge\nStudent ID: 110340713\nEmail ID: STRTK001\nThis is my own work as defined by the University's Academic Integrity Policy.\n\n")
+    print("Author: Travis Strawbridge\nStudent ID: 110340713\nEmail ID: STRTK001\n"+
+    "This is my own work as defined by the University's Academic Integrity Policy.\n")
 
 if __name__ == "__main__":
     run()
